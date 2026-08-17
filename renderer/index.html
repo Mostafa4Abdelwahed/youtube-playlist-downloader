@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloader YouTube Playlists</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>YouTube Playlist Downloader</h1>
+    <p class="sub">حمّل قوائم تشغيل اليوتيوب (فيديو أو صوت)</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <label for="url">رابط قائمة التشغيل</label>
+      <input id="url" type="text" placeholder="https://www.youtube.com/playlist?list=..." />
+
+      <div class="row">
+        <div class="field">
+          <label for="type">النوع</label>
+          <select id="type">
+            <option value="video">فيديو (MP4)</option>
+            <option value="audio">صوت (MP3)</option>
+          </select>
+        </div>
+        <div class="field" id="qualityField">
+          <label for="quality">الجودة</label>
+          <select id="quality">
+            <option value="best">أفضل جودة</option>
+            <option value="1080">1080p</option>
+            <option value="720">720p</option>
+            <option value="480">480p</option>
+            <option value="360">360p</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="folder">مجلد الحفظ</label>
+          <div class="folder-row">
+            <input id="folder" type="text" placeholder="اختر مجلداً..." readonly />
+            <button id="browse">تصفّح</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="fetch" class="primary">عرض القائمة</button>
+        <button id="start" class="primary" disabled>بدء التحميل</button>
+      </div>
+    </section>
+
+    <section class="card" id="infoCard" hidden>
+      <h2 id="playlistTitle"></h2>
+      <p id="playlistMeta" class="meta"></p>
+      <details>
+        <summary>عرض العناصر (<span id="itemCount">0</span>)</summary>
+        <ul id="itemList" class="items"></ul>
+      </details>
+    </section>
+
+    <section class="card" id="progressCard" hidden>
+      <div class="progress-wrap">
+        <div id="progressBar"></div>
+      </div>
+      <p id="progressText">0%</p>
+      <p id="currentFile" class="meta"></p>
+      <div id="log" class="log"></div>
+    </section>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

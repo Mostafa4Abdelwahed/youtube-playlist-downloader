@@ -1,0 +1,114 @@
+:root {
+  --bg: #0f1115;
+  --card: #1a1d24;
+  --accent: #ff0033;
+  --accent2: #2d6cdf;
+  --text: #e8eaf0;
+  --muted: #9aa0ad;
+  --border: #2a2f3a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+header h1 { margin: 0; color: var(--accent); }
+.sub { color: var(--muted); margin: 4px 0 0; }
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+label { display: block; font-size: 14px; margin-bottom: 6px; color: var(--muted); }
+
+input[type="text"], select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #11131a;
+  color: var(--text);
+  font-size: 14px;
+}
+
+input[readonly] { cursor: default; }
+
+.row { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.field { flex: 1 1 160px; }
+.field.grow { flex: 2 1 260px; }
+
+.folder-row { display: flex; gap: 8px; }
+.folder-row input { flex: 1; }
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  background: #2a2f3a;
+  color: var(--text);
+  transition: opacity .15s;
+}
+button:hover { opacity: .85; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+button.primary { background: var(--accent); color: #fff; }
+
+.actions { display: flex; gap: 12px; margin-top: 16px; }
+
+.meta { color: var(--muted); font-size: 13px; }
+.items { max-height: 220px; overflow-y: auto; padding-inline-start: 20px; }
+.items li { font-size: 13px; padding: 2px 0; }
+
+.progress-wrap {
+  height: 14px;
+  background: #11131a;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width .3s;
+}
+#progressText { margin: 8px 0 0; font-weight: 600; }
+
+.log {
+  margin-top: 12px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: #0b0d12;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #cdd3e0;
+  white-space: pre-wrap;
+}
