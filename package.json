@@ -12,10 +12,15 @@
   "build": {
     "appId": "com.example.ytplaylistdownloader",
     "productName": "YouTube Playlist Downloader",
+    "asar": false,
     "files": [
       "main.js",
       "preload.js",
-      "renderer/**/*"
+      "renderer/**/*",
+      "node_modules/youtube-dl-exec/**",
+      "node_modules/dargs/**",
+      "node_modules/tinyspawn/**",
+      "node_modules/ffmpeg-static/**"
     ],
     "win": {
       "target": "nsis"

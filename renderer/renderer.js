@@ -7,6 +7,9 @@ const els = {
   qualityField: $('qualityField'),
   folder: $('folder'),
   browse: $('browse'),
+  cookiesBrowser: $('cookiesBrowser'),
+  cookiesFile: $('cookiesFile'),
+  browseCookies: $('browseCookies'),
   fetch: $('fetch'),
   start: $('start'),
   infoCard: $('infoCard'),
@@ -36,12 +39,24 @@ els.browse.addEventListener('click', async () => {
   }
 });
 
+els.browseCookies.addEventListener('click', async () => {
+  const result = await window.api.selectFile();
+  if (result) els.cookiesFile.value = result;
+});
+
+function cookieFlags() {
+  return {
+    cookiesBrowser: els.cookiesBrowser.value || null,
+    cookiesFile: els.cookiesFile.value.trim() || null
+  };
+}
+
 els.fetch.addEventListener('click', async () => {
   const url = els.url.value.trim();
   if (!url) return alert('أدخل رابط القائمة أولاً');
   els.fetch.disabled = true;
   els.fetch.textContent = 'جارِ التحميل...';
-  const res = await window.api.getPlaylistInfo(url);
+  const res = await window.api.getPlaylistInfo(url, cookieFlags());
   els.fetch.disabled = false;
   els.fetch.textContent = 'عرض القائمة';
 
@@ -89,7 +104,8 @@ els.start.addEventListener('click', async () => {
     url: els.url.value.trim(),
     outputDir,
     type: els.type.value,
-    quality: els.quality.value
+    quality: els.quality.value,
+    ...cookieFlags()
   });
 
   downloading = false;

@@ -8,9 +8,10 @@ const ffmpegPath = require('ffmpeg-static');
 const YTDL_BIN = youtubeDl.constants.YOUTUBE_DL_PATH;
 
 // yt-dlp is a PyInstaller bundle that extracts its Python runtime into
-// %TEMP%. The system drive (C:) may be full, so we force extraction onto
-// a temp dir on the same drive as this project (D:), which has free space.
-const YT_TMP = path.join(__dirname, '.yt-tmp');
+// %TEMP%. We force extraction onto a writable temp dir. In dev this is a
+// folder next to the project; in the packaged app we use userData (the
+// asar archive is read-only, so __dirname can't be used).
+const YT_TMP = path.join(app.getPath('userData'), '.yt-tmp');
 if (!fs.existsSync(YT_TMP)) fs.mkdirSync(YT_TMP, { recursive: true });
 
 // Spawn yt-dlp directly with an argument ARRAY (shell:false) so Windows
@@ -61,6 +62,13 @@ function send(channel, ...args) {
   }
 }
 
+function cookieArgs(cookies = {}) {
+  const a = {};
+  if (cookies.cookiesFile) a.cookies = cookies.cookiesFile;
+  else if (cookies.cookiesBrowser) a.cookiesFromBrowser = cookies.cookiesBrowser;
+  return a;
+}
+
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
@@ -69,7 +77,15 @@ ipcMain.handle('select-folder', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('get-playlist-info', async (event, url) => {
+ipcMain.handle('select-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle('get-playlist-info', async (event, url, cookies = {}) => {
   return new Promise((resolve) => {
     const cp = spawnYtDl(url, {
       dumpSingleJson: true,
@@ -77,12 +93,14 @@ ipcMain.handle('get-playlist-info', async (event, url) => {
       noWarnings: true,
       simulate: true,
       ffmpegLocation: ffmpegPath,
-      jsRuntimes: 'node'
+      jsRuntimes: 'node',
+      ...cookieArgs(cookies)
     });
     let out = '';
     let err = '';
     cp.stdout.on('data', (d) => (out += d.toString()));
     cp.stderr.on('data', (d) => (err += d.toString()));
+    cp.on('error', (e) => resolve({ ok: false, error: 'تعذّر تشغيل yt-dlp: ' + e.message }));
     cp.on('close', (code) => {
       if (code !== 0) {
         resolve({ ok: false, error: err.trim() || `Exit code ${code}` });
@@ -110,13 +128,14 @@ ipcMain.handle('get-playlist-info', async (event, url) => {
   });
 });
 
-ipcMain.handle('download', async (event, { url, outputDir, type, quality }) => {
+ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookiesBrowser, cookiesFile }) => {
   if (!outputDir) return { ok: false, error: 'No output folder selected' };
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
   const baseTemplate = path.join(outputDir, '%(playlist_index)02d - %(title)s.%(ext)s');
 
   const args = {
+    ...cookieArgs({ cookiesBrowser, cookiesFile }),
     output: baseTemplate,
     noWarnings: true,
     continue: true,
@@ -164,6 +183,10 @@ ipcMain.handle('download', async (event, { url, outputDir, type, quality }) => {
       for (const line of lines) handleLine(line);
     };
     proc.stdout.on('data', onData);
+    proc.on('error', (e) => {
+      send('download-error', 'تعذّر تشغيل yt-dlp: ' + e.message);
+      resolve({ ok: false, error: e.message });
+    });
     proc.stderr.on('data', (d) => {
       const text = d.toString();
       errBuffer += text;

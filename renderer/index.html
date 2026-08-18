@@ -44,6 +44,26 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="field">
+          <label for="cookiesBrowser">كوكيز المتصفح</label>
+          <select id="cookiesBrowser">
+            <option value="">بدون</option>
+            <option value="chrome">Chrome</option>
+            <option value="firefox">Firefox</option>
+            <option value="edge">Edge</option>
+            <option value="brave">Brave</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="cookiesFile">ملف كوكيز (cookies.txt)</label>
+          <div class="folder-row">
+            <input id="cookiesFile" type="text" placeholder="اختياري: مسار ملف الكوكيز المصدّر" readonly />
+            <button id="browseCookies">تصفّح</button>
+          </div>
+        </div>
+      </div>
+
       <div class="actions">
         <button id="fetch" class="primary">عرض القائمة</button>
         <button id="start" class="primary" disabled>بدء التحميل</button>
