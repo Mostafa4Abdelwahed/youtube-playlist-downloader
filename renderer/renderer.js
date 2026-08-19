@@ -10,6 +10,8 @@ const els = {
   cookiesBrowser: $('cookiesBrowser'),
   cookiesFile: $('cookiesFile'),
   browseCookies: $('browseCookies'),
+  startItem: $('startItem'),
+  endItem: $('endItem'),
   fetch: $('fetch'),
   start: $('start'),
   infoCard: $('infoCard'),
@@ -105,6 +107,8 @@ els.start.addEventListener('click', async () => {
     outputDir,
     type: els.type.value,
     quality: els.quality.value,
+    startItem: els.startItem.value.trim(),
+    endItem: els.endItem.value.trim(),
     ...cookieFlags()
   });
 

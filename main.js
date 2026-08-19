@@ -128,14 +128,20 @@ ipcMain.handle('get-playlist-info', async (event, url, cookies = {}) => {
   });
 });
 
-ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookiesBrowser, cookiesFile }) => {
+ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookiesBrowser, cookiesFile, startItem, endItem }) => {
   if (!outputDir) return { ok: false, error: 'No output folder selected' };
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
   const baseTemplate = path.join(outputDir, '%(playlist_index)02d - %(title)s.%(ext)s');
 
+  let playlistItems = '';
+  if (startItem && endItem) playlistItems = `${startItem}-${endItem}`;
+  else if (startItem) playlistItems = `${startItem}-`;
+  else if (endItem) playlistItems = `-${endItem}`;
+
   const args = {
     ...cookieArgs({ cookiesBrowser, cookiesFile }),
+    ...(playlistItems ? { playlistItems } : {}),
     output: baseTemplate,
     noWarnings: true,
     continue: true,

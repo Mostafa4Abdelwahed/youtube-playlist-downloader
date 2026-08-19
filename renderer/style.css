@@ -43,7 +43,7 @@ main {
 
 label { display: block; font-size: 14px; margin-bottom: 6px; color: var(--muted); }
 
-input[type="text"], select {
+input[type="text"], input[type="number"], select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
