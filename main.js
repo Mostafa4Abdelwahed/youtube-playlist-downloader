@@ -7,6 +7,10 @@ const ffmpegPath = require('ffmpeg-static');
 
 const YTDL_BIN = youtubeDl.constants.YOUTUBE_DL_PATH;
 
+// Folder that ships the yt-dlp POT provider plugin (bgutil-ytdlp-pot-provider.zip).
+// Passed to yt-dlp via --plugin-dirs so PO tokens are fetched automatically.
+const YTDL_PLUGIN_DIR = path.join(__dirname, 'plugins');
+
 // yt-dlp is a PyInstaller bundle that extracts its Python runtime into
 // %TEMP%. We force extraction onto a writable temp dir. In dev this is a
 // folder next to the project; in the packaged app we use userData (the
@@ -18,7 +22,7 @@ if (!fs.existsSync(YT_TMP)) fs.mkdirSync(YT_TMP, { recursive: true });
 // passes arguments literally. This avoids cmd.exe mangling `%`-based
 // output templates and dropping flags when the binary path contains spaces.
 function spawnYtDl(url, flags, tempDir = YT_TMP) {
-  const fullArgs = [url, ...youtubeDl.args(flags)].filter(Boolean);
+  const fullArgs = [url, ...youtubeDl.args({ ...flags, pluginDirs: YTDL_PLUGIN_DIR })].filter(Boolean);
   return spawn(YTDL_BIN, fullArgs, {
     shell: false,
     windowsHide: true,
@@ -69,20 +73,21 @@ function cookieArgs(cookies = {}) {
   return a;
 }
 
-// Build a `--extractor-args` string for YouTube from the optional UI fields.
-// Supported yt-dlp syntax (2025+): `youtube:player_client=CLIENT;po_token=CLIENT+GENERATOR+@PROVIDER_URL`.
-// Any value pasted in the raw extractor-args field is merged into the `youtube:` section.
+// Build the `--extractor-args` flags for YouTube from the optional UI fields.
+// NOTE: since yt-dlp 2025.07 the manual `po_token=CLIENT+@URL` provider syntax is gone.
+// PO tokens are now obtained through a POT provider plugin (bgutil-ytdlp-pot-provider is
+// shipped with this app under ./plugins). Its HTTP server is auto-detected on 127.0.0.1:4416,
+// or a custom URL can be set here via the `youtubepot-bgutilhttp:base_url` extractor arg.
 function buildExtractorArgs({ playerClient, poTokenUrl, extractorArgs } = {}) {
   let raw = (extractorArgs || '').trim();
   if (raw.startsWith('youtube:')) raw = raw.slice('youtube:'.length);
-  const parts = [];
-  if (playerClient) parts.push(`player_client=${playerClient}`);
-  if (poTokenUrl) {
-    const client = playerClient || 'web';
-    parts.push(`po_token=${client}+web.spf+@${poTokenUrl}`);
-  }
-  if (raw) parts.push(raw);
-  return parts.length ? `youtube:${parts.join(';')}` : '';
+  const ytParts = [];
+  if (playerClient) ytParts.push(`player_client=${playerClient}`);
+  if (raw) ytParts.push(raw);
+  const args = [];
+  if (ytParts.length) args.push(`youtube:${ytParts.join(';')}`);
+  if (poTokenUrl) args.push(`youtubepot-bgutilhttp:base_url=${poTokenUrl}`);
+  return args;
 }
 
 ipcMain.handle('select-folder', async () => {
@@ -113,7 +118,7 @@ ipcMain.handle('get-playlist-info', async (event, url, opts = {}) => {
       ffmpegLocation: ffmpegPath,
       jsRuntimes: 'node',
       ...cookieArgs({ cookiesBrowser, cookiesFile }),
-      ...(ea ? { extractorArgs: ea } : {})
+      ...(ea.length ? { extractorArgs: ea } : {})
     });
     let out = '';
     let err = '';
@@ -162,7 +167,7 @@ ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookie
   const args = {
     ...cookieArgs({ cookiesBrowser, cookiesFile }),
     ...(playlistItems ? { playlistItems } : {}),
-    ...(ea ? { extractorArgs: ea } : {}),
+    ...(ea.length ? { extractorArgs: ea } : {}),
     output: baseTemplate,
     noWarnings: true,
     continue: true,

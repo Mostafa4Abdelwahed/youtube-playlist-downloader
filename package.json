@@ -17,6 +17,7 @@
       "main.js",
       "preload.js",
       "renderer/**/*",
+      "plugins/**/*",
       "node_modules/youtube-dl-exec/**",
       "node_modules/dargs/**",
       "node_modules/tinyspawn/**",
