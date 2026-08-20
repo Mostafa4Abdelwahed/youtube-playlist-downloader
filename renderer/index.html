@@ -79,6 +79,40 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="field">
+          <label for="playerClient">عميل التشغيل (Player Client)</label>
+          <select id="playerClient">
+            <option value="">تلقائي (افتراضي)</option>
+            <option value="web">web</option>
+            <option value="web_safari">web_safari</option>
+            <option value="mweb">mweb</option>
+            <option value="tv">tv</option>
+            <option value="android">android</option>
+            <option value="ios">ios</option>
+            <option value="android_vr">android_vr</option>
+            <option value="web_embedded">web_embedded</option>
+            <option value="tv_downgraded">tv_downgraded</option>
+            <option value="web_music">web_music</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="poTokenUrl">رابط مزوّد PO Token (اختياري)</label>
+          <input id="poTokenUrl" type="text" placeholder="http://127.0.0.1:4416/get_pot" dir="ltr" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field grow">
+          <label for="extractorArgs">خصائص Extractors متقدمة (اختياري)</label>
+          <input id="extractorArgs" type="text" placeholder="مثال: player_skip=webpage" dir="ltr" />
+        </div>
+        <div class="field grow">
+          <label>&nbsp;</label>
+          <p class="meta" style="margin:8px 0 0">استخدم هذا فقط إذا كنت تعرف ما تفعله. يُدمج تلقائياً مع حقول عميل التشغيل و PO Token.</p>
+        </div>
+      </div>
+
       <div class="actions">
         <button id="fetch" class="primary">عرض القائمة</button>
         <button id="start" class="primary" disabled>بدء التحميل</button>

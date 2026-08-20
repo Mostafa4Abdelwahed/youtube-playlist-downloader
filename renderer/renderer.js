@@ -10,6 +10,9 @@ const els = {
   cookiesBrowser: $('cookiesBrowser'),
   cookiesFile: $('cookiesFile'),
   browseCookies: $('browseCookies'),
+  playerClient: $('playerClient'),
+  poTokenUrl: $('poTokenUrl'),
+  extractorArgs: $('extractorArgs'),
   startItem: $('startItem'),
   endItem: $('endItem'),
   fetch: $('fetch'),
@@ -53,12 +56,20 @@ function cookieFlags() {
   };
 }
 
+function advancedFlags() {
+  return {
+    playerClient: els.playerClient.value || null,
+    poTokenUrl: els.poTokenUrl.value.trim() || null,
+    extractorArgs: els.extractorArgs.value.trim() || null
+  };
+}
+
 els.fetch.addEventListener('click', async () => {
   const url = els.url.value.trim();
   if (!url) return alert('أدخل رابط القائمة أولاً');
   els.fetch.disabled = true;
   els.fetch.textContent = 'جارِ التحميل...';
-  const res = await window.api.getPlaylistInfo(url, cookieFlags());
+  const res = await window.api.getPlaylistInfo(url, { ...cookieFlags(), ...advancedFlags() });
   els.fetch.disabled = false;
   els.fetch.textContent = 'عرض القائمة';
 
@@ -109,7 +120,8 @@ els.start.addEventListener('click', async () => {
     quality: els.quality.value,
     startItem: els.startItem.value.trim(),
     endItem: els.endItem.value.trim(),
-    ...cookieFlags()
+    ...cookieFlags(),
+    ...advancedFlags()
   });
 
   downloading = false;

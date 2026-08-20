@@ -69,6 +69,22 @@ function cookieArgs(cookies = {}) {
   return a;
 }
 
+// Build a `--extractor-args` string for YouTube from the optional UI fields.
+// Supported yt-dlp syntax (2025+): `youtube:player_client=CLIENT;po_token=CLIENT+GENERATOR+@PROVIDER_URL`.
+// Any value pasted in the raw extractor-args field is merged into the `youtube:` section.
+function buildExtractorArgs({ playerClient, poTokenUrl, extractorArgs } = {}) {
+  let raw = (extractorArgs || '').trim();
+  if (raw.startsWith('youtube:')) raw = raw.slice('youtube:'.length);
+  const parts = [];
+  if (playerClient) parts.push(`player_client=${playerClient}`);
+  if (poTokenUrl) {
+    const client = playerClient || 'web';
+    parts.push(`po_token=${client}+web.spf+@${poTokenUrl}`);
+  }
+  if (raw) parts.push(raw);
+  return parts.length ? `youtube:${parts.join(';')}` : '';
+}
+
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
@@ -85,7 +101,9 @@ ipcMain.handle('select-file', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('get-playlist-info', async (event, url, cookies = {}) => {
+ipcMain.handle('get-playlist-info', async (event, url, opts = {}) => {
+  const { cookiesBrowser, cookiesFile, playerClient, poTokenUrl, extractorArgs } = opts;
+  const ea = buildExtractorArgs({ playerClient, poTokenUrl, extractorArgs });
   return new Promise((resolve) => {
     const cp = spawnYtDl(url, {
       dumpSingleJson: true,
@@ -94,7 +112,8 @@ ipcMain.handle('get-playlist-info', async (event, url, cookies = {}) => {
       simulate: true,
       ffmpegLocation: ffmpegPath,
       jsRuntimes: 'node',
-      ...cookieArgs(cookies)
+      ...cookieArgs({ cookiesBrowser, cookiesFile }),
+      ...(ea ? { extractorArgs: ea } : {})
     });
     let out = '';
     let err = '';
@@ -128,7 +147,7 @@ ipcMain.handle('get-playlist-info', async (event, url, cookies = {}) => {
   });
 });
 
-ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookiesBrowser, cookiesFile, startItem, endItem }) => {
+ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookiesBrowser, cookiesFile, startItem, endItem, playerClient, poTokenUrl, extractorArgs }) => {
   if (!outputDir) return { ok: false, error: 'No output folder selected' };
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
@@ -139,9 +158,11 @@ ipcMain.handle('download', async (event, { url, outputDir, type, quality, cookie
   else if (startItem) playlistItems = `${startItem}-`;
   else if (endItem) playlistItems = `-${endItem}`;
 
+  const ea = buildExtractorArgs({ playerClient, poTokenUrl, extractorArgs });
   const args = {
     ...cookieArgs({ cookiesBrowser, cookiesFile }),
     ...(playlistItems ? { playlistItems } : {}),
+    ...(ea ? { extractorArgs: ea } : {}),
     output: baseTemplate,
     noWarnings: true,
     continue: true,

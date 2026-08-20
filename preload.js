@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   selectFile: () => ipcRenderer.invoke('select-file'),
-  getPlaylistInfo: (url, cookies) => ipcRenderer.invoke('get-playlist-info', url, cookies),
+  getPlaylistInfo: (url, opts) => ipcRenderer.invoke('get-playlist-info', url, opts),
   download: (opts) => ipcRenderer.invoke('download', opts),
   onDownloadStarted: (cb) => ipcRenderer.on('download-started', () => cb()),
   onDownloadProgress: (cb) => ipcRenderer.on('download-progress', (e, p) => cb(p)),
